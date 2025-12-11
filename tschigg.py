@@ -151,7 +151,7 @@ def player_turn_high_sp(target_to_beat=None, num_rolls=3):
     return current_score
 
 
-def run_simulation(roll, num_rolls=3, num_games=100):
+def run_simulation(roll, num_players=3, num_rolls=3, num_games=100):
     wins = [0, 0, 0]
     mids = [0, 0, 0]
     losses = [0, 0, 0]
@@ -163,63 +163,63 @@ def run_simulation(roll, num_rolls=3, num_games=100):
             my_score = get_score(roll, mode=m)
 
             if m == 'low':
-                # Player 2 tries to beat our score
-                p2_score = player_turn_low(target_to_beat=my_score, num_rolls=num_rolls)
-
-                # Player 3 tries to beat the score
-                current_low = min(my_score, p2_score)
-                p3_score = player_turn_low(target_to_beat=current_low, num_rolls=num_rolls)
+                player_scores = {}  # Only contains opponents' scores (p2, p3, ..., pn)
+                current_best = my_score
+                for n in range(2, num_players + 1):
+                    # Next player tries to beat our score
+                    player_scores[f'player{n}'] = player_turn_low(target_to_beat=current_best, num_rolls=num_rolls)
+                    current_best = min(current_best, player_scores[f'player{n}'])
 
                 # Check if we held the lowest score
-                if my_score <= p2_score and my_score <= p3_score:
+                if my_score <= min(player_scores.values()):
                     wins[0] += 1
                 #Check if we held neither the lowest nor the highest score
-                if (p2_score < my_score <= p3_score) or (p3_score < my_score <= p2_score):
+                elif min(player_scores.values()) < my_score <= max(player_scores.values()):
                     mids[0] += 1
                 #Check if we held the highest score
-                if my_score > p2_score and my_score > p3_score:
+                elif my_score > max(player_scores.values()):
                     losses[0] += 1
 
             elif m == 'high_std':
-                # Player 2 tries to beat our score
-                p2_score = player_turn_high_std(target_to_beat=my_score, num_rolls=num_rolls)
-
-                # Player 3 tries to beat the score
-                current_high = max(my_score, p2_score)
-                p3_score = player_turn_high_std(target_to_beat=current_high, num_rolls=num_rolls)
+                player_scores = {}  # Only contains opponents' scores (p2, p3, ..., pn)
+                current_best = my_score
+                for n in range(2, num_players + 1):
+                    # Next player tries to beat our score
+                    player_scores[f'player{n}'] = player_turn_high_std(target_to_beat=current_best, num_rolls=num_rolls)
+                    current_best = max(current_best, player_scores[f'player{n}'])
 
                 # Check if we held the highest score
-                if my_score >= p2_score and my_score >= p3_score:
+                if my_score >= max(player_scores.values()):
                     wins[1] += 1
                 #Check if we held neither the highest nor the lowest score
-                elif (p2_score > my_score >= p3_score) or (p3_score > my_score >= p2_score):
+                elif max(player_scores.values()) > my_score >= min(player_scores.values()):
                     mids[1] += 1
                 #Check if we held the lowest score
-                elif my_score < p2_score and my_score < p3_score:
+                elif my_score < min(player_scores.values()):
                     losses[1] += 1
 
             elif m == 'high_sp':
-                # Player 2 tries to beat our score
-                p2_score = player_turn_high_sp(target_to_beat=my_score, num_rolls=num_rolls)
-
-                # Player 3 tries to beat the score
-                current_high = max(my_score, p2_score)
-                p3_score = player_turn_high_sp(target_to_beat=current_high, num_rolls=num_rolls)
+                player_scores = {}  # Only contains opponents' scores (p2, p3, ..., pn)
+                current_best = my_score
+                for n in range(2, num_players + 1):
+                    # Next player tries to beat our score
+                    player_scores[f'player{n}'] = player_turn_high_sp(target_to_beat=current_best, num_rolls=num_rolls)
+                    current_best = max(current_best, player_scores[f'player{n}'])
 
                 # Check if we held the highest score
-                if my_score >= p2_score and my_score >= p3_score:
+                if my_score >= max(player_scores.values()):
                     wins[2] += 1
                 #Check if we held neither the highest nor the lowest score
-                elif (p2_score > my_score >= p3_score) or (p3_score > my_score >= p2_score):
+                elif max(player_scores.values()) > my_score >= min(player_scores.values()):
                     mids[2] += 1
                 #Check if we held the lowest score
-                elif my_score < p2_score and my_score < p3_score:
+                elif my_score < min(player_scores.values()):
                     losses[2] += 1
 
 
     return wins, mids, losses
 
-def display(roll, num_rolls, wins, mids, losses, num_games):
+def display(roll, num_players, num_rolls, wins, mids, losses, num_games):
     score_low = get_score(roll, mode='low')
     score_high_std = get_score(roll, mode='high_std')
     score_high_sp = get_score(roll, mode='high_sp')
@@ -230,18 +230,19 @@ def display(roll, num_rolls, wins, mids, losses, num_games):
     row3 = ['Mid', f'{round(mids[0]/num_games * 100, 2)}%', f'{round(mids[1]/num_games * 100, 2)}%', f'{round(mids[2]/num_games * 100, 2)}%']
     row4 = ['Loss', f'{round(losses[0]/num_games * 100, 2)}%', f'{round(losses[1]/num_games * 100, 2)}%', f'{round(losses[2]/num_games * 100, 2)}%']
 
-    print(f'\nRoll: {roll}  |  Max. Rolls: {num_rolls}  |  Number of Games: {num_games}\n')
+    print(f'\nRoll: {roll}  |  Players: {num_players}  |  Max. Rolls: {num_rolls}  |  Number of Games: {num_games}\n')
     print(tabulate([row1, row2, row3, row4], headers=headers))
 
 
 def main():
     roll = roll_dice(3)
-    #roll = [6, 4, 3]
+    roll = [3, 6, 6]
+    num_players = 3
     num_rolls = 1
-    num_games = 100
+    num_games = 10000
 
-    wins, mids, losses = run_simulation(roll=roll, num_rolls=num_rolls, num_games=num_games)
+    wins, mids, losses = run_simulation(roll=roll, num_players=num_players, num_rolls=num_rolls, num_games=num_games)
 
-    display(roll, num_rolls, wins, mids, losses, num_games)
+    display(roll, num_players, num_rolls, wins, mids, losses, num_games)
 
 main()
