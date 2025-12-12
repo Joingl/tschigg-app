@@ -3,15 +3,6 @@ import tschigg as gg
 import polars as pl
 import json
 
-with open('values_low.json', 'r') as file:
-    values_low = json.load(file)
-
-with open('values_high_standard.json', 'r') as file:
-    values_high_standard = json.load(file)
-
-with open('values_high_special.json', 'r') as file:
-    values_high_special = json.load(file)
-
 # Initialize session state
 if 'estimated' not in st.session_state:
     st.session_state['estimated'] = False
