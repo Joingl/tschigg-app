@@ -2,37 +2,45 @@ import random
 import json
 from tabulate import tabulate
 
-# Import the ranking JSONs
-with open('values_low.json', 'r') as file:
-    values_low = json.load(file)
-
-with open('values_high_standard.json', 'r') as file:
-    values_high_standard = json.load(file)
-
-with open('values_high_special.json', 'r') as file:
-    values_high_special = json.load(file)
-
-
-
 def roll_dice(num_dice):
     """Simulates rolling a specific number of d6 dice."""
     return [random.randint(1, 6) for r in range(num_dice)]
 
 
 def get_score(roll, mode):
-    """Reads the score for the roll from a dictionary, depending on the mode."""
-    key = ''
-    for d in roll:
-        key += str(d)
-
+    final_roll = roll.copy() # Makes sure to keep the original roll
     if mode == 'low':
-        score = values_low[key]
-    elif mode == 'high_std':
-        score = values_high_standard[key]
-    elif mode == 'high_sp':
-        score = values_high_special[key]
+        if final_roll.count(6) == 2:
+            idx = final_roll.index(6)
+            final_roll[idx] = 1
+        elif final_roll.count(6) == 3:
+            final_roll = [6, 1, 1]
 
-    return score
+        return sum(final_roll)
+
+    if mode == 'high_std':
+        if final_roll.count(1) == 3:
+            return 999
+        else:
+            return sum(final_roll)
+
+    if mode == 'high_sp':
+        if final_roll.count(6) == 2:
+            idx = final_roll.index(6)
+            final_roll[idx] = 1
+        elif final_roll.count(6) == 3:
+            final_roll = [6, 1, 1]
+
+        if final_roll.count(1) == 0:
+            return sum(final_roll)
+        if final_roll.count(1) == 1:
+            remaining_dice = sorted([d for d in final_roll if d != 1], reverse=True)
+            return 100 + 10 * remaining_dice[0] + remaining_dice[1]
+        if final_roll.count(1) == 2:
+            remaining_dice = [d for d in final_roll if d != 1]
+            return 200 + 10 * remaining_dice[0]
+        if final_roll.count(1) == 3:
+            return 999
 
 
 def player_turn_low(target_to_beat=None, num_rolls=3):
@@ -219,6 +227,7 @@ def run_simulation(roll, num_players=3, num_rolls=3, num_games=100):
 
     return wins, mids, losses
 
+
 def display(roll, num_players, num_rolls, wins, mids, losses, num_games):
     score_low = get_score(roll, mode='low')
     score_high_std = get_score(roll, mode='high_std')
@@ -236,7 +245,7 @@ def display(roll, num_players, num_rolls, wins, mids, losses, num_games):
 
 def main():
     roll = roll_dice(3)
-    roll = [3, 6, 6]
+    roll = [1, 2, 4]
     num_players = 3
     num_rolls = 1
     num_games = 10000
