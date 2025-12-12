@@ -2,6 +2,8 @@ import streamlit as st
 import tschigg as gg
 import polars as pl
 
+st.set_page_config(layout='wide')
+
 # Initialize session state
 if 'estimated' not in st.session_state:
     st.session_state['estimated'] = False
