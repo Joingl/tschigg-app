@@ -23,20 +23,21 @@ st.title('Tschigg Probability Estimator')
 st.divider()
 
 with st.container():
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     d1 = col1.number_input('Die 1', min_value=1, max_value=6, value=1, step=1, icon='🎲')
-    d2 = col2.number_input('Die 2', min_value=1, max_value=6, value=1, step=1, icon='🎲')
-    d3 = col3.number_input('Die 3', min_value=1, max_value=6, value=1, step=1, icon='🎲')
+    d2 = col1.number_input('Die 2', min_value=1, max_value=6, value=1, step=1, icon='🎲')
+    d3 = col1.number_input('Die 3', min_value=1, max_value=6, value=1, step=1, icon='🎲')
     roll = [d1, d2, d3]
 
-    num_players = col1.number_input('Number of players', min_value=2, max_value=10, value=3, step=1, help='Total number of players, including you.')
+    num_players = col2.number_input('Number of players', min_value=2, max_value=10, value=3, step=1, help='Total number of players, including you.')
     num_rolls = col2.number_input('Number of rolls', min_value=1, max_value=3, value=1, step=1, help='Max. number of rolls allowed per player.')
-    num_games = col3.selectbox('Number of games', [10, 100, 1000, 10000, 100000], index=1, help='Number of simulated games used for probability estimation.')
+    num_games = col2.selectbox('Number of games', [10, 100, 1000, 10000, 100000], index=1, help='Number of simulated games used for probability estimation.')
 
 
-    col2.space()
-    if col2.button('Estimate probabilities', type='primary', width='stretch'):
+    st.space()
+
+    if st.button('Estimate probabilities', type='primary'):
         estimate = True
         st.session_state['estimated'] = True
         st.session_state['wins'], st.session_state['mids'], st.session_state['losses'] = gg.run_simulation(roll=roll, num_players=num_players, num_rolls=num_rolls, num_games=num_games)
